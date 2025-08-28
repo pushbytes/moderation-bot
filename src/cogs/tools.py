@@ -171,7 +171,7 @@ class ToolsCog(commands.Cog):
         # Check if the user has the authorized role
         if AUTHORIZED_ROLE_ID not in author_roles:
             await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
-            #return
+            return
         
         try:
             message_id_int = int(message_id)

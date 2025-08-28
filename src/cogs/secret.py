@@ -15,7 +15,7 @@ class SecretCog(commands.Cog):
         author_roles = [role.id for role in interaction.user.roles]
 
         # Permission check
-        if 1291872613844652073 not in author_roles:
+        if 1381390158187856086 not in author_roles:
             await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
             return
 

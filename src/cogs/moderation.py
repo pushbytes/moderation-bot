@@ -37,7 +37,7 @@ class ModerationCog(commands.Cog):
         # Check if the user has the authorized role
         if AUTHORIZED_ROLE_ID not in author_roles:
             await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
-            #return
+            return
 
         # Prevent banning users with protected roles
         try:
@@ -92,7 +92,7 @@ class ModerationCog(commands.Cog):
         # Check if the user has the authorized role
         if AUTHORIZED_ROLE_ID not in author_roles:
             await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
-            #return
+            return
 
         try:
             # Check if user is banned
@@ -143,7 +143,7 @@ class ModerationCog(commands.Cog):
         # Permission check
         if AUTHORIZED_ROLE_ID not in author_roles:
             await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
-            #return
+            return
 
         # Prevent timing out users with protected roles
         try:
@@ -206,7 +206,7 @@ class ModerationCog(commands.Cog):
         # Permission check
         if AUTHORIZED_ROLE_ID not in author_roles:
             await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
-            #return
+            return
 
         # Prevent timing out users with protected roles
         try:
@@ -262,7 +262,7 @@ class ModerationCog(commands.Cog):
         # Check permission role
         if AUTHORIZED_ROLE_ID not in author_roles:
             await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
-            #return
+            return
 
         try:
             # Prevent deletion of protected message IDs
