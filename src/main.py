@@ -53,5 +53,11 @@ async def on_ready():
     await bot.tree.sync()
     print("Commands synced!")
 
+@bot.event
+async def on_message(message):
+    mention = f'<@{bot.user.id}>'
+    if mention in message.content:
+        await message.reply("hi my name jira")
+
 token = os.getenv("bot_token")
 bot.run(token)
