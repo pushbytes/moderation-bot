@@ -1,0 +1,22 @@
+AUTHORIZED_ROLE_ID = 1388945259018588323 # Moderator
+
+GOOOBER_ROLE_ID = 1396544467221348533 # Goober... like duh its the name of the variable
+ARTIST_ROLE_ID = 1398408631552053458  # Artist... do i need to say it again?
+
+PROTECTED_ROLE_IDS = [
+    1381390158187856086, # Acrylic
+    1382024030814470174, # Salami
+    1388608520395690004, # Art Panel
+    1388945259018588323, # Moderator
+    1396183199985696831  # Jira
+]
+
+LOG_CHANNEL_ID = 1398414939101728968     # jira-log text chat
+APPLY_CHANNEL_ID = 1398415716243214447   # artist-applications text chat
+REPORTS_CHANNEL_ID = 1398447401945141268 # reports text chat
+
+RESTRICTED_MESSAGE_IDS = [
+    1381732115401670807, # Rules embed
+    1388940505521590334, # Role Info embed
+    1382458512260599840  # Video Progress embed
+]
