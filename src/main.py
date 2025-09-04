@@ -15,24 +15,6 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-def parse_duration(duration_str: str) -> Optional[timedelta]:
-    """Parses duration strings like '10m', '2h', '1d' into timedelta."""
-    try:
-        unit = duration_str[-1]
-        value = int(duration_str[:-1])
-        if unit == "s":
-            return timedelta(seconds=value)
-        elif unit == "m":
-            return timedelta(minutes=value)
-        elif unit == "h":
-            return timedelta(hours=value)
-        elif unit == "d":
-            return timedelta(days=value)
-        else:
-            return None
-    except:
-        return None
-
 class Bot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
@@ -52,6 +34,12 @@ async def on_ready():
     print(f'Logged in as {bot.user}')
     await bot.tree.sync()
     print("Commands synced!")
+
+@bot.event
+async def on_message(message):
+    mention = f'<@{bot.user.id}>'
+    if mention in message.content:
+        await message.reply("hi my name jira")
 
 token = os.getenv("bot_token")
 bot.run(token)
