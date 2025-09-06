@@ -30,7 +30,7 @@ class ModerationCog(commands.Cog):
             return None
 
     @mod.command(name="ban", description="Ban a member from the server.")
-    async def ban(self, interaction: discord.Interaction, member: discord.Member, reason: str = "No reason provided", silent: bool = True):
+    async def ban(self, interaction: discord.Interaction, member: discord.Member, reason: str, message: str = "No additional message provided", silent: bool = True):
         await interaction.response.send_message("Banning member...", ephemeral=True)
         author_roles = [role.id for role in interaction.user.roles]
 
@@ -50,7 +50,7 @@ class ModerationCog(commands.Cog):
 
         embed = discord.Embed(
             title=f"{LOCK_EMOJI} User Banned",
-            description=f"**User:** {member.mention}\n**Reason:** {reason}\n**Moderator:** {interaction.user.mention}",
+            description=f"**User:** {member.mention}\n**Reason:** {reason}\n**Message:** {message}\n**Moderator:** {interaction.user.mention}",
             color=discord.Color.red()
         )
         embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
@@ -136,7 +136,7 @@ class ModerationCog(commands.Cog):
             await interaction.followup.send(f"{X_EMOJI} An unexpected error occurred: {str(e)}", ephemeral=True)
 
     @mod.command(name="timeout", description="Temporarily timeout a member.")
-    async def timeout(self, interaction: discord.Interaction, member: discord.Member, duration: str, reason: str = "No reason provided", silent: bool = True):
+    async def timeout(self, interaction: discord.Interaction, member: discord.Member, duration: str, reason: str, message: str = "No additional message provided", silent: bool = True):
         await interaction.response.send_message("Timing member out...", ephemeral=True)
         author_roles = [role.id for role in interaction.user.roles]
 
@@ -167,7 +167,7 @@ class ModerationCog(commands.Cog):
             # Create the embed
             embed = discord.Embed(
                 title=f"{HOURGLASS_EMOJI} User Timed Out",
-                description=f"**User:** {member.mention}\n**Duration:** {duration}\n**Reason:** {reason}\n**Moderator:** {interaction.user.mention}",
+                description=f"**User:** {member.mention}\n**Duration:** {duration}\n**Reason:** {reason}\n**Message:** {message}\n**Moderator:** {interaction.user.mention}",
                 color=discord.Color.orange()
             )
             embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
@@ -198,7 +198,7 @@ class ModerationCog(commands.Cog):
             await interaction.followup.send(f"{X_EMOJI} An unexpected error occurred: {str(e)}", ephemeral=True)
 
     @mod.command(name="untimeout", description="Remove timeout from a member.")
-    async def untimeout(self, interaction: discord.Interaction, member: discord.Member, reason: str = "No reason provided", silent: bool = True):
+    async def untimeout(self, interaction: discord.Interaction, member: discord.Member, message: str = "No additional message provided", silent: bool = True):
         await interaction.response.send_message("Removing timeout from member...", ephemeral=True)
         author_roles = [role.id for role in interaction.user.roles]
 
@@ -218,12 +218,12 @@ class ModerationCog(commands.Cog):
 
 
         try:
-            await member.timeout(discord.utils.utcnow() + self.parse_duration('0s'), reason=reason)
+            await member.timeout(discord.utils.utcnow() + self.parse_duration('0s'))
 
             # Create the embed
             embed = discord.Embed(
                 title=f"{HOURGLASS_EMOJI} User Untimed Out",
-                description=f"**User:** {member.mention}\n**Reason:** {reason}\n**Moderator:** {interaction.user.mention}",
+                description=f"**User:** {member.mention}\n**Message:** {message}\n**Moderator:** {interaction.user.mention}",
                 color=discord.Color.orange()
             )
             embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
@@ -254,7 +254,7 @@ class ModerationCog(commands.Cog):
             await interaction.followup.send(f"{X_EMOJI} An unexpected error occurred: {str(e)}", ephemeral=True)
 
     @mod.command(name="delete_message", description="Delete a message by its ID.")
-    async def delete_message(self, interaction: discord.Interaction, message_id: str, reason: str, should_resend: bool = True, silent: bool = True):
+    async def delete_message(self, interaction: discord.Interaction, message_id: str, reason: str, message: str = "No additional message provided", should_resend: bool = True, silent: bool = True):
         await interaction.response.send_message("Deleting message...", ephemeral=True)
         author_roles = [role.id for role in interaction.user.roles]
 
@@ -301,6 +301,7 @@ class ModerationCog(commands.Cog):
                 **Channel:** {target_message.channel.mention}
                 **Author:** {target_message.author.mention}
                 **Reason:** {reason}
+                **Message:** {message}
                 **Moderator:** {interaction.user.mention}
                 """,
                 color=discord.Color.red()
