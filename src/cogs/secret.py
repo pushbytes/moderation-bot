@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from cogs.ids_testing import *
+from cogs.ids import *
 
 class SecretCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
@@ -16,7 +16,7 @@ class SecretCog(commands.Cog):
 
         # Permission check
         if 1381390158187856086 not in author_roles:
-            await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
         # Respond in command channel
@@ -24,8 +24,8 @@ class SecretCog(commands.Cog):
             try:
                 await member.send(string)
             except discord.Forbidden:
-                await interaction.followup.send(f"Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
+                await interaction.followup.send(f"{WARNING_EMOJI} Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
         else:
             await interaction.channel.send(string)
-        await interaction.followup.send("Message sent if possible.", ephemeral=True)
+        await interaction.followup.send(f"{CHECK_EMOJI} Message sent if possible.", ephemeral=True)
 

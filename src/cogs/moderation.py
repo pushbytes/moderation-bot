@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from cogs.ids_testing import *
+from cogs.ids import *
 from datetime import timedelta
 from typing import Optional
 
@@ -36,20 +36,20 @@ class ModerationCog(commands.Cog):
 
         # Check if the user has the authorized role
         if AUTHORIZED_ROLE_ID not in author_roles:
-            await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
         # Prevent banning users with protected roles
         try:
             target_roles = [role.id for role in member.roles]
             if any(role_id in PROTECTED_ROLE_IDS for role_id in target_roles):
-                await interaction.followup.send("❌ You cannot ban this user because they have a protected role.", ephemeral=True)
+                await interaction.followup.send(f"{X_EMOJI} You cannot ban this user because they have a protected role.", ephemeral=True)
                 return
         except:
             pass
 
         embed = discord.Embed(
-            title="🔨 User Banned",
+            title=f"{LOCK_EMOJI} User Banned",
             description=f"**User:** {member.mention}\n**Reason:** {reason}\n**Moderator:** {interaction.user.mention}",
             color=discord.Color.red()
         )
@@ -60,7 +60,7 @@ class ModerationCog(commands.Cog):
         try:
             await member.send(embed=embed)
         except discord.Forbidden:
-            await interaction.followup.send(f"Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
+            await interaction.followup.send(f"{WARNING_EMOJI} Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
             #return
         
         # Try banning the user
@@ -77,12 +77,12 @@ class ModerationCog(commands.Cog):
             if log_channel:
                 await log_channel.send(embed=embed)
             else:
-                print(f"⚠️ Log channel with ID {LOG_CHANNEL_ID} not found.")
+                print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
 
         except discord.Forbidden:
-            await interaction.followup.send("❌ I don't have permission to ban this user.", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} I don't have permission to ban this user.", ephemeral=True)
         except Exception as e:
-            await interaction.followup.send(f"❌ An unexpected error occurred: {str(e)}", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} An unexpected error occurred: {str(e)}", ephemeral=True)
 
     @mod.command(name="pardon", description="Unban a user from the server.")
     async def pardon(self, interaction: discord.Interaction, user: discord.User, silent: bool = True):
@@ -91,7 +91,7 @@ class ModerationCog(commands.Cog):
 
         # Check if the user has the authorized role
         if AUTHORIZED_ROLE_ID not in author_roles:
-            await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
         try:
@@ -103,7 +103,7 @@ class ModerationCog(commands.Cog):
                     break
 
             if banned_user is None:
-                await interaction.followup.send("⚠️ This user is not banned.", ephemeral=True)
+                await interaction.followup.send(f"{WARNING_EMOJI} This user is not banned.", ephemeral=True)
                 return
 
             # Unban the user
@@ -111,7 +111,7 @@ class ModerationCog(commands.Cog):
 
             # Create the embed
             embed = discord.Embed(
-                title="🕊️ User Unbanned",
+                title=f"{UNLOCK_EMOJI} User Unbanned",
                 description=f"**User:** {user.mention}\n**Moderator:** {interaction.user.mention}",
                 color=discord.Color.green()
             )
@@ -128,12 +128,12 @@ class ModerationCog(commands.Cog):
             if log_channel:
                 await log_channel.send(embed=embed)
             else:
-                print(f"⚠️ Log channel with ID {LOG_CHANNEL_ID} not found.")
+                print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
 
         except discord.Forbidden:
-            await interaction.followup.send("❌ I don't have permission to unban this user.", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} I don't have permission to unban this user.", ephemeral=True)
         except Exception as e:
-            await interaction.followup.send(f"❌ An unexpected error occurred: {str(e)}", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} An unexpected error occurred: {str(e)}", ephemeral=True)
 
     @mod.command(name="timeout", description="Temporarily timeout a member.")
     async def timeout(self, interaction: discord.Interaction, member: discord.Member, duration: str, reason: str = "No reason provided", silent: bool = True):
@@ -142,14 +142,14 @@ class ModerationCog(commands.Cog):
 
         # Permission check
         if AUTHORIZED_ROLE_ID not in author_roles:
-            await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
         # Prevent timing out users with protected roles
         try:
             target_roles = [role.id for role in member.roles]
             if any(role_id in PROTECTED_ROLE_IDS for role_id in target_roles):
-                await interaction.followup.send("❌ You cannot timeout this user because they have a protected role.", ephemeral=True)
+                await interaction.followup.send(f"{X_EMOJI} You cannot timeout this user because they have a protected role.", ephemeral=True)
                 return
         except:
             pass
@@ -157,7 +157,7 @@ class ModerationCog(commands.Cog):
         # Parse the duration string
         timeout_duration = self.parse_duration(duration)
         if not timeout_duration:
-            await interaction.followup.send("❌ Invalid duration format. Use something like `10m`, `2h`, `1d`.", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} Invalid duration format. Use something like `10m`, `2h`, `1d`.", ephemeral=True)
             return
 
         try:
@@ -167,7 +167,7 @@ class ModerationCog(commands.Cog):
 
             # Create the embed
             embed = discord.Embed(
-                title="⏳ User Timed Out",
+                title=f"{HOURGLASS_EMOJI} User Timed Out",
                 description=f"**User:** {member.mention}\n**Duration:** {duration}\n**Reason:** {reason}\n**Moderator:** {interaction.user.mention}",
                 color=discord.Color.orange()
             )
@@ -178,7 +178,7 @@ class ModerationCog(commands.Cog):
             try:
                 await member.send(embed=embed)
             except discord.Forbidden:
-                await interaction.followup.send(f"Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
+                await interaction.followup.send(f"{WARNING_EMOJI} Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
 
             # Respond in command channel
             await interaction.followup.send(embed=embed, ephemeral=True)
@@ -191,12 +191,12 @@ class ModerationCog(commands.Cog):
             if log_channel:
                 await log_channel.send(embed=embed)
             else:
-                print(f"⚠️ Log channel with ID {LOG_CHANNEL_ID} not found.")
+                print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
 
         except discord.Forbidden:
-            await interaction.followup.send("❌ I don't have permission to timeout this user.", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} I don't have permission to timeout this user.", ephemeral=True)
         except Exception as e:
-            await interaction.followup.send(f"❌ An unexpected error occurred: {str(e)}", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} An unexpected error occurred: {str(e)}", ephemeral=True)
 
     @mod.command(name="untimeout", description="Remove timeout from a member.")
     async def untimeout(self, interaction: discord.Interaction, member: discord.Member, reason: str = "No reason provided", silent: bool = True):
@@ -205,14 +205,14 @@ class ModerationCog(commands.Cog):
 
         # Permission check
         if AUTHORIZED_ROLE_ID not in author_roles:
-            await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
         # Prevent timing out users with protected roles
         try:
             target_roles = [role.id for role in member.roles]
             if any(role_id in PROTECTED_ROLE_IDS for role_id in target_roles):
-                await interaction.followup.send("❌ You cannot timeout this user because they have a protected role.", ephemeral=True)
+                await interaction.followup.send(f"{X_EMOJI} You cannot timeout this user because they have a protected role.", ephemeral=True)
                 return
         except:
             pass
@@ -223,7 +223,7 @@ class ModerationCog(commands.Cog):
 
             # Create the embed
             embed = discord.Embed(
-                title="⏳ User Untimed Out",
+                title=f"{HOURGLASS_EMOJI} User Untimed Out",
                 description=f"**User:** {member.mention}\n**Reason:** {reason}\n**Moderator:** {interaction.user.mention}",
                 color=discord.Color.orange()
             )
@@ -234,7 +234,7 @@ class ModerationCog(commands.Cog):
             try:
                 await member.send(embed=embed)
             except discord.Forbidden:
-                await interaction.followup.send(f"Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
+                await interaction.followup.send(f"{WARNING_EMOJI} Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
 
             # Respond in command channel
             await interaction.followup.send(embed=embed, ephemeral=True)
@@ -247,12 +247,12 @@ class ModerationCog(commands.Cog):
             if log_channel:
                 await log_channel.send(embed=embed)
             else:
-                print(f"⚠️ Log channel with ID {LOG_CHANNEL_ID} not found.")
+                print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
 
         except discord.Forbidden:
-            await interaction.followup.send("❌ I don't have permission to timeout this user.", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} I don't have permission to timeout this user.", ephemeral=True)
         except Exception as e:
-            await interaction.followup.send(f"❌ An unexpected error occurred: {str(e)}", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} An unexpected error occurred: {str(e)}", ephemeral=True)
 
     @mod.command(name="delete_message", description="Delete a message by its ID.")
     async def delete_message(self, interaction: discord.Interaction, message_id: str, reason: str, should_resend: bool = True, silent: bool = True):
@@ -261,14 +261,14 @@ class ModerationCog(commands.Cog):
 
         # Check permission role
         if AUTHORIZED_ROLE_ID not in author_roles:
-            await interaction.followup.send("❌ You don't have permission to use this command.", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
         try:
             # Prevent deletion of protected message IDs
             message_id_int = int(message_id)
             if message_id_int in RESTRICTED_MESSAGE_IDS:
-                await interaction.followup.send("🚫 This message is restricted and cannot be deleted.", ephemeral=True)
+                await interaction.followup.send(f"{X_EMOJI} This message is restricted and cannot be deleted.", ephemeral=True)
                 return
 
             # Search all text channels for the message
@@ -284,19 +284,19 @@ class ModerationCog(commands.Cog):
                     continue
 
             if not target_message:
-                await interaction.followup.send("❌ Message not found in any accessible text channel.", ephemeral=True)
+                await interaction.followup.send(f"{WARNING_EMOJI} Message not found in any accessible text channel.", ephemeral=True)
                 return
 
             # Check if message author has protected roles
             if isinstance(target_message.author, discord.Member):
                 target_roles = [role.id for role in target_message.author.roles]
                 if any(rid in PROTECTED_ROLE_IDS for rid in target_roles):
-                    await interaction.followup.send("🚫 Cannot delete messages from protected users.", ephemeral=True)
+                    await interaction.followup.send(f"{X_EMOJI} Cannot delete messages from protected users.", ephemeral=True)
                     return
 
             # Create response embed
             embed = discord.Embed(
-                title="🗑️ Message Deleted",
+                title=f"{TRASH_EMOJI} Message Deleted",
                 description=f"""
                 **Message ID:** `{message_id}`
                 **Channel:** {target_message.channel.mention}
@@ -318,7 +318,7 @@ class ModerationCog(commands.Cog):
                             file = await attachment.to_file(use_cached=True)
                             resend_files.append(file)
                         except Exception as e:
-                            await interaction.followup.send(f"❌ Could not resend some attachments due to an error: {e}", ephemeral=True)
+                            await interaction.followup.send(f"{X_EMOJI} Could not resend some attachments due to an error: {e}", ephemeral=True)
 
             # Send to log channel
             log_channel = self.bot.get_channel(LOG_CHANNEL_ID)
@@ -337,7 +337,7 @@ class ModerationCog(commands.Cog):
                         content_preview = content_preview[:1900] + "\n... *(truncated)*"
 
                     resend_embed = discord.Embed(
-                        title="📋 Original Message Contents",
+                        title=f"{CLIPBOARD_EMOJI} Original Message Contents",
                         description=content_preview,
                         color=discord.Color.orange()
                     )
@@ -350,7 +350,7 @@ class ModerationCog(commands.Cog):
                     if resend_files:
                         await thread.send(files=resend_files)
             else:
-                print(f"⚠️ Log channel with ID {LOG_CHANNEL_ID} not found.")
+                print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
 
             # Try to DM the user
             try:
@@ -364,7 +364,7 @@ class ModerationCog(commands.Cog):
                             dm_files.append(file)
                         await member.send(files=dm_files)
             except discord.Forbidden:
-                await interaction.followup.send(f"Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
+                await interaction.followup.send(f"{WARNING_EMOJI} Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
 
             await target_message.delete()
             
@@ -373,7 +373,7 @@ class ModerationCog(commands.Cog):
             else:
                 await interaction.followup.send(embed=embed, ephemeral=True)
         except Exception as e:
-            await interaction.followup.send(f"❌ An unexpected error occurred: {str(e)}", ephemeral=True)
+            await interaction.followup.send(f"{X_EMOJI} An unexpected error occurred: {str(e)}", ephemeral=True)
 
 
 
