@@ -294,33 +294,40 @@ class ModerationCog(commands.Cog):
                     await interaction.followup.send("🚫 Cannot delete messages from protected users.", ephemeral=True)
                     return
 
-            await target_message.delete()
-
             # Create response embed
             embed = discord.Embed(
                 title="🗑️ Message Deleted",
                 description=f"""
-                **Message ID:** `{message_id}`\n
-                **Channel:** {target_message.channel.mention}\n
-                **Author:** {target_message.author.mention}\n
-                **Reason:** {reason}\n
+                **Message ID:** `{message_id}`
+                **Channel:** {target_message.channel.mention}
+                **Author:** {target_message.author.mention}
+                **Reason:** {reason}
                 **Moderator:** {interaction.user.mention}
                 """,
                 color=discord.Color.red()
             )
 
-            """
-            if not file.content_type or not file.content_type.startswith("image/"):
-                await interaction.followup.send("Please upload a valid image file (PNG, JPEG, etc.)", ephemeral=True)
-                return
-            else:
-                embed.set_image(url=file.url)
-            """
+            for attachment in target_message.attachments:
+                resend_files = []
+                try:
+                    # Convert attachment to discord.File
+                    file = await attachment.to_file(use_cached=True)
+                    resend_files.append(file)
+                except Exception as e:
+                    await interaction.followup.send(f"❌ Could not resend some attachments due to an error: {e}", ephemeral=True)
+                    return
 
-            if file.content_type or file.content_type.startswith("image/"):
-                embed.set_image(url=file.url)
+            resend_embed = discord.Embed(
+                title="📋 Message Contents",
+                description=f"""
+                **Contents:**
+                {target_message.content}
+                """,
+                color=discord.Color.red()
+            )
 
             embed.timestamp = discord.utils.utcnow()
+            resend_embed.timestamp = discord.utils.utcnow()
 
             await interaction.followup.send(embed=embed, ephemeral=True)
             
@@ -331,14 +338,20 @@ class ModerationCog(commands.Cog):
             log_channel = self.bot.get_channel(LOG_CHANNEL_ID)
             if log_channel:
                 await log_channel.send(embed=embed)
+                await log_channel.send(embed=resend_embed)
+                await log_channel.send(files=resend_files)
             else:
                 print(f"⚠️ Log channel with ID {LOG_CHANNEL_ID} not found.")
 
             # Try to DM the user
             try:
                 await member.send(embed=embed)
+                await member.send(embed=resend_embed)
+                await member.send(files=resend_files)
             except discord.Forbidden:
                 await interaction.followup.send(f"Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
+            
+            await target_message.delete()
 
         except Exception as e:
             await interaction.followup.send(f"❌ An unexpected error occurred: {str(e)}", ephemeral=True)

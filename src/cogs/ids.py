@@ -1,6 +1,6 @@
 AUTHORIZED_ROLE_ID = 1388945259018588323 # Moderator
 
-GOOOBER_ROLE_ID = 1396544467221348533 # Goober... like duh its the name of the variable
+GOOBER_ROLE_ID = 1396544467221348533 # Goober... like duh its the name of the variable
 ARTIST_ROLE_ID = 1398408631552053458  # Artist... do i need to say it again?
 
 PROTECTED_ROLE_IDS = [

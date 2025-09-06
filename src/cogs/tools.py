@@ -75,7 +75,7 @@ class ToolsCog(commands.Cog):
         if tenure >= required_tenure:
             role = interaction.guild.get_role(GOOBER_ROLE_ID)
             if not role:
-                await interaction.followup.send("⚠️ Role not found. Check the GOOOBER_ROLE_ID. If you are seeing this, please report this to staff via `/tools report`.", ephemeral=True)
+                await interaction.followup.send("⚠️ Role not found. Check the GOOBER_ROLE_ID. If you are seeing this, please report this to staff via `/tools report`.", ephemeral=True)
                 return
 
             if role in interaction.user.roles:
