@@ -77,7 +77,7 @@ class ModerationCog(commands.Cog):
             if log_channel:
                 await log_channel.send(embed=embed)
             else:
-                print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
+                await interaction.followup.send(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.", ephemeral=True)
 
         except discord.Forbidden:
             await interaction.followup.send(f"{X_EMOJI} I don't have permission to ban this user.", ephemeral=True)
@@ -128,7 +128,7 @@ class ModerationCog(commands.Cog):
             if log_channel:
                 await log_channel.send(embed=embed)
             else:
-                print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
+                await interaction.followup.send(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.", ephemeral=True)
 
         except discord.Forbidden:
             await interaction.followup.send(f"{X_EMOJI} I don't have permission to unban this user.", ephemeral=True)
@@ -161,7 +161,6 @@ class ModerationCog(commands.Cog):
             return
 
         try:
-            print(timeout_duration, type(timeout_duration))
             until = discord.utils.utcnow() + timeout_duration
             await member.timeout(until, reason=reason)
 
@@ -191,7 +190,7 @@ class ModerationCog(commands.Cog):
             if log_channel:
                 await log_channel.send(embed=embed)
             else:
-                print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
+                await interaction.followup.send(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.", ephemeral=True)
 
         except discord.Forbidden:
             await interaction.followup.send(f"{X_EMOJI} I don't have permission to timeout this user.", ephemeral=True)
@@ -247,7 +246,7 @@ class ModerationCog(commands.Cog):
             if log_channel:
                 await log_channel.send(embed=embed)
             else:
-                print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
+                await interaction.followup.send(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.", ephemeral=True)
 
         except discord.Forbidden:
             await interaction.followup.send(f"{X_EMOJI} I don't have permission to timeout this user.", ephemeral=True)
@@ -350,7 +349,7 @@ class ModerationCog(commands.Cog):
                     if resend_files:
                         await thread.send(files=resend_files)
             else:
-                print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
+                await interaction.followup.send(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.", ephemeral=True)
 
             # Try to DM the user
             try:

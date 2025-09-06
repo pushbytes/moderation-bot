@@ -39,7 +39,7 @@ class ToolsCog(commands.Cog):
         if report_channel:
             await report_channel.send(embed=embed)
         else:
-            print(f"{WARNING_EMOJI} Report channel with ID {REPORTS_CHANNEL_ID} not found.")
+            await interaction.followup.send(f"{WARNING_EMOJI} Report channel with ID {REPORTS_CHANNEL_ID} not found.", ephemeral=True)
 
         embed = discord.Embed(
             title=f"{NO_ENTRY_EMOJI} New Report",
@@ -54,7 +54,7 @@ class ToolsCog(commands.Cog):
         if log_channel:
             await log_channel.send(embed=embed)
         else:
-            print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
+            await interaction.followup.send(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.", ephemeral=True)
 
         await interaction.followup.send(f"{CHECK_EMOJI} Your report has been sent to staff.", ephemeral=True)
 
@@ -99,7 +99,7 @@ class ToolsCog(commands.Cog):
                 if log_channel:
                     await log_channel.send(embed=embed)
                 else:
-                    print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
+                    await interaction.followup.send(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.", ephemeral=True)
 
             except discord.Forbidden:
                 await interaction.followup.send(f"{WARNING_EMOJI} Failed to assign role to {interaction.user.mention}. Check my permissions. If you are seeing this, please report this to staff via `/tools report`.", ephemeral=True)
@@ -130,7 +130,7 @@ class ToolsCog(commands.Cog):
         # Get the target channel
         apply_channel = self.bot.get_channel(APPLY_CHANNEL_ID)
         if not apply_channel:
-            print(f"{WARNING_EMOJI} Apply channel with ID {APPLY_CHANNEL_ID} not found.")
+            await interaction.followup.send(f"{WARNING_EMOJI} Apply channel with ID {APPLY_CHANNEL_ID} not found.", ephemeral=True)
             return
 
         # Create an embed with the image
@@ -157,7 +157,7 @@ class ToolsCog(commands.Cog):
         if log_channel:
             await log_channel.send(embed=embed)
         else:
-            print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
+            await interaction.followup.send(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.", ephemeral=True)
 
         # Confirm to user
         await interaction.followup.send(f"{CHECK_EMOJI} Your application for Artist role has been sent.", ephemeral=True)
@@ -181,7 +181,7 @@ class ToolsCog(commands.Cog):
         
         apply_channel = self.bot.get_channel(APPLY_CHANNEL_ID)
         if not apply_channel:
-            print(f"{WARNING_EMOJI} Apply channel with ID {APPLY_CHANNEL_ID} not found.")
+            await interaction.followup.send(f"{WARNING_EMOJI} Apply channel with ID {APPLY_CHANNEL_ID} not found.", ephemeral=True)
             return
         
         try:
@@ -209,7 +209,7 @@ class ToolsCog(commands.Cog):
         if log_channel:
             await log_channel.send(embed=embed)
         else:
-            print(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.")
+            await interaction.followup.send(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.", ephemeral=True)
 
         # Try to DM the user
         try:
