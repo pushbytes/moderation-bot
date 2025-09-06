@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from cogs.ids import *
+from cogs.ids_testing import *
 
 class SecretCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:

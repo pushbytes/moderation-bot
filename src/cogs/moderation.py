@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from cogs.ids import *
+from cogs.ids_testing import *
 from datetime import timedelta
 from typing import Optional
 
@@ -255,7 +255,7 @@ class ModerationCog(commands.Cog):
             await interaction.followup.send(f"❌ An unexpected error occurred: {str(e)}", ephemeral=True)
 
     @mod.command(name="delete_message", description="Delete a message by its ID.")
-    async def delete_message(self, interaction: discord.Interaction, message_id: str, reason: str = "No reason provided", file: discord.Attachment = None, silent: bool = True):
+    async def delete_message(self, interaction: discord.Interaction, message_id: str, reason: str, should_resend: bool = True, silent: bool = True):
         await interaction.response.send_message("Deleting message...", ephemeral=True)
         author_roles = [role.id for role in interaction.user.roles]
 
@@ -307,52 +307,71 @@ class ModerationCog(commands.Cog):
                 color=discord.Color.red()
             )
 
-            for attachment in target_message.attachments:
-                resend_files = []
-                try:
-                    # Convert attachment to discord.File
-                    file = await attachment.to_file(use_cached=True)
-                    resend_files.append(file)
-                except Exception as e:
-                    await interaction.followup.send(f"❌ Could not resend some attachments due to an error: {e}", ephemeral=True)
-                    return
-
-            resend_embed = discord.Embed(
-                title="📋 Message Contents",
-                description=f"""
-                **Contents:**
-                {target_message.content}
-                """,
-                color=discord.Color.red()
-            )
-
             embed.timestamp = discord.utils.utcnow()
-            resend_embed.timestamp = discord.utils.utcnow()
 
-            await interaction.followup.send(embed=embed, ephemeral=True)
-            
-            if silent is False:
-                await interaction.followup.send(embed=embed)
+            if should_resend:
+                resend_files = []
+                if target_message.attachments:
+                    for attachment in target_message.attachments:
+                        try:
+                            # Convert attachment to discord.File
+                            file = await attachment.to_file(use_cached=True)
+                            resend_files.append(file)
+                        except Exception as e:
+                            await interaction.followup.send(f"❌ Could not resend some attachments due to an error: {e}", ephemeral=True)
 
             # Send to log channel
             log_channel = self.bot.get_channel(LOG_CHANNEL_ID)
             if log_channel:
-                await log_channel.send(embed=embed)
-                await log_channel.send(embed=resend_embed)
-                await log_channel.send(files=resend_files)
+                log_message = await log_channel.send(embed=embed)
+
+                if should_resend:
+                    thread_title = f"Deleted Message"
+                    thread = await log_message.create_thread(
+                        name=thread_title,
+                        auto_archive_duration=60
+                    )
+
+                    content_preview = target_message.content or "*[No text content]*"
+                    if len(content_preview) > 1900:
+                        content_preview = content_preview[:1900] + "\n... *(truncated)*"
+
+                    resend_embed = discord.Embed(
+                        title="📋 Original Message Contents",
+                        description=content_preview,
+                        color=discord.Color.orange()
+                    )
+                    resend_embed.set_author(name=str(target_message.author), icon_url=target_message.author.display_avatar.url)
+                    resend_embed.timestamp = discord.utils.utcnow()
+
+                    await thread.send(embed=resend_embed)
+
+                    # Resend attachments if any
+                    if resend_files:
+                        await thread.send(files=resend_files)
             else:
                 print(f"⚠️ Log channel with ID {LOG_CHANNEL_ID} not found.")
 
             # Try to DM the user
             try:
                 await member.send(embed=embed)
-                await member.send(embed=resend_embed)
-                await member.send(files=resend_files)
+                if should_resend:
+                    await member.send(embed=resend_embed)
+                    if resend_files:
+                        dm_files = []
+                        for attachment in target_message.attachments:
+                            file = await attachment.to_file(use_cached=True)
+                            dm_files.append(file)
+                        await member.send(files=dm_files)
             except discord.Forbidden:
                 await interaction.followup.send(f"Couldn't DM {member.mention}. They might have DMs disabled.", ephemeral=True)
-            
-            await target_message.delete()
 
+            await target_message.delete()
+            
+            if silent is False:
+                await interaction.followup.send(embed=embed)
+            else:
+                await interaction.followup.send(embed=embed, ephemeral=True)
         except Exception as e:
             await interaction.followup.send(f"❌ An unexpected error occurred: {str(e)}", ephemeral=True)
 

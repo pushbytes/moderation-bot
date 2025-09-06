@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from cogs.ids import *
+from cogs.ids_testing import *
 from datetime import timedelta, datetime, timezone
 
 class ToolsCog(commands.Cog):
