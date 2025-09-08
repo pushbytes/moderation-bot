@@ -9,6 +9,7 @@ from typing import Optional
 import json
 
 from cogs import moderation, tools, secret
+from cogs.ids import *
 
 load_dotenv()
 
@@ -80,6 +81,20 @@ async def on_message(message):
     mention = f'<@{bot.user.id}>'
     if mention in message.content:
         await message.reply("hi my name jira")
+
+@bot.event
+async def on_member_update(before, after):
+    if before.roles != after.roles:
+        roles = [role.id for role in after.roles]
+        role = bot.get_guild(1381383838399332454).get_role(SUPER_SUPPORTER_ROLE_ID)
+
+        # If they have the two roles needed, but dont have the new role
+        if MEMBER_TIER_2_ROLE_ID in roles and SUB_TIER_3_ROLE_ID in roles and SUPER_SUPPORTER_ROLE_ID not in roles:
+            await after.add_roles(role)
+        # Removing the role if they no longer have the prereqs
+        elif SUPER_SUPPORTER_ROLE_ID in roles and MEMBER_TIER_2_ROLE_ID not in roles or SUB_TIER_3_ROLE_ID not in roles:
+            await after.remove_roles(role)
+
 
 token = os.getenv("bot_token")
 bot.run(token)

@@ -400,6 +400,7 @@ class ToolsCog(commands.Cog):
         embed_community = discord.Embed(color=16772213)
         embed_community.add_field(inline=False, name=f"{COMMUNITY_EMOJI} Community Roles {COMMUNITY_EMOJI}", value="----------------------------\n")
         embed_community.add_field(inline=True, name="", value=f"{SPECIAL_ROLE_EMOJI}{SPECIAL_ROLE_MENTION}{SPECIAL_ROLE_EMOJI}\nGranted to users under special circumstances, say winning an event")
+        embed_community.add_field(inline=True, name="", value=f"{SUPER_SUPPORTER_ROLE_EMOJI}{SUPER_SUPPORTER_ROLE_MENTION}{SUPER_SUPPORTER_ROLE_EMOJI}\nAutomatically granted to those who are a Tier 2, YouTube channel member and a Tier 3, Twitch sub. No additional perks, you just stand out more")
         embed_community.add_field(inline=True, name="", value=f"{MEMBER_TIER_2_ROLE_EMOJI}{MEMBER_TIER_2_ROLE_MENTION}{MEMBER_TIER_2_ROLE_EMOJI}\nAutomatically granted to those who are a Tier 2, YouTube channel member. See YouTube channel for perks")
         embed_community.add_field(inline=True, name="", value=f"{MEMBER_TIER_1_ROLE_EMOJI}{MEMBER_TIER_1_ROLE_MENTION}{MEMBER_TIER_1_ROLE_EMOJI}\nAutomatically granted to those who are a Tier 1, YouTube channel member. See YouTube channel for perks")
         embed_community.add_field(inline=True, name="", value=f"{MEMBER_ROLE_EMOJI}{MEMBER_ROLE_MENTION}{MEMBER_ROLE_EMOJI}\nAutomatically granted to anyone who is a YouTube channel member, regardless of tier. Comes with perms to change your nickname")
