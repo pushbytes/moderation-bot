@@ -3,12 +3,46 @@ from discord.ext import commands
 from discord import app_commands
 from cogs.ids import *
 from datetime import timedelta, datetime, timezone
+import json
+import os
 
 class ToolsCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     tools = app_commands.Group(name="tools", description="Jira's Tools and Utilities")
+
+    def load_strikes(self):
+        with open(os.path.abspath('./strikes.json'), "r") as f:
+            return json.load(f)
+
+    def save_strikes(self, data):
+        with open(os.path.abspath('./strikes.json'), "w") as f:
+            json.dump(data, f, indent=4)
+
+    def clean_expired_strikes(self, data):
+        now = datetime.now(timezone.utc)
+        updated = False
+        for guild_id in list(data.keys()):
+            for user_id in list(data[guild_id].keys()):
+                original_len = len(data[guild_id][user_id])
+
+                data[guild_id][user_id] = [
+                    strike for strike in data[guild_id][user_id]
+                    if datetime.fromisoformat(strike["timestamp"]) > now - timedelta(days=30)
+                ]
+
+                if not data[guild_id][user_id]:
+                    del data[guild_id][user_id]
+                    updated = True
+                elif len(data[guild_id][user_id]) != original_len:
+                    updated = True
+
+            if not data[guild_id]:
+                del data[guild_id]
+                updated = True
+
+        return updated
 
     @tools.command(name="report", description="Report a user or bug to staff.")
     async def report(self, interaction: discord.Interaction, reason: str, file: discord.Attachment = None, member: discord.Member = None):
@@ -72,6 +106,14 @@ class ToolsCog(commands.Cog):
         tenure = now - joined_at
         required_tenure = timedelta(days=3)
 
+        user_id = str(interaction.user.id)
+        data = self.load_strikes()
+        guild_id = str(interaction.guild.id)
+
+        self.clean_expired_strikes(data)
+
+        strikes = data.get(guild_id, {}).get(user_id, [])
+
         if tenure >= required_tenure:
             role = interaction.guild.get_role(GOOBER_ROLE_ID)
             if not role:
@@ -80,6 +122,10 @@ class ToolsCog(commands.Cog):
 
             if role in interaction.user.roles:
                 await interaction.followup.send(f"{X_EMOJI} You already have Goober role.", ephemeral=True)
+                return
+
+            if int(len(strikes)) >= 2:
+                await interaction.followup.send(f"{X_EMOJI} You currently have 2+ active strikes and cannot obtain Goober role.", ephemeral=True)
                 return
 
             try:
@@ -107,6 +153,74 @@ class ToolsCog(commands.Cog):
             remaining = required_tenure - tenure
             hours_left = int(remaining.total_seconds() // 3600)
             await interaction.followup.send(f"{X_EMOJI} You have only been in the server for {tenure.days} days.\nYou need **{hours_left} more hours** to qualify.", ephemeral=True)
+
+    @tools.command(name="goober2", description="Check if you are eligble for Goober 2 role.")
+    async def goober2(self, interaction: discord.Interaction):
+        await interaction.response.send_message("Checking if you are eligble...", ephemeral=True)
+
+        now = datetime.now(timezone.utc)
+        joined_at = interaction.user.joined_at
+
+        if not joined_at:
+            await interaction.followup.send(f"{WARNING_EMOJI} Couldn't determine when you joined, please try again. If this continues to happen, please report this to staff via `/tools report`.", ephemeral=True)
+            return
+
+        tenure = now - joined_at
+        required_tenure = timedelta(days=21)
+
+        user_id = str(interaction.user.id)
+        data = self.load_strikes()
+        guild_id = str(interaction.guild.id)
+
+        self.clean_expired_strikes(data)
+
+        strikes = data.get(guild_id, {}).get(user_id, [])
+
+        if tenure >= required_tenure:
+            goober = interaction.guild.get_role(GOOBER_ROLE_ID)
+            role = interaction.guild.get_role(GOOBER_2_ROLE_ID)
+            if not role:
+                await interaction.followup.send(f"{WARNING_EMOJI} Role not found. Check the GOOBER_2_ROLE_ID. If you are seeing this, please report this to staff via `/tools report`.", ephemeral=True)
+                return
+
+            if role in interaction.user.roles:
+                await interaction.followup.send(f"{X_EMOJI} You already have Goober 2 role.", ephemeral=True)
+                return
+            
+            if goober not in interaction.user.roles:
+                await interaction.followup.send(f"{X_EMOJI} You must have Goober role before you can get Goober 2 role.", ephemeral=True)
+                return
+
+            if int(len(strikes)) >= 2:
+                await interaction.followup.send(f"{X_EMOJI} You currently have 2+ active strikes and cannot obtain Goober 2 role.", ephemeral=True)
+                return
+
+            try:
+                await interaction.user.add_roles(role, reason="Met 3-week server tenure requirement")
+                await interaction.followup.send(f"{CHECK_EMOJI} You have been in the server for {tenure.days} days and as such have been promoted to Goober 2 role.", ephemeral=True)
+
+                embed = discord.Embed(
+                    title=f"{GOOBER_2_ROLE_EMOJI} User Promoted to Goober 2",
+                    description=f"**User:** {interaction.user.mention}",
+                    color=discord.Color.teal()
+                )
+                embed.set_thumbnail(url=interaction.user.avatar.url if interaction.user.avatar else interaction.user.default_avatar.url)
+                embed.timestamp = discord.utils.utcnow()
+
+                # Send to log channel
+                log_channel = self.bot.get_channel(LOG_CHANNEL_ID)
+                if log_channel:
+                    await log_channel.send(embed=embed)
+                else:
+                    await interaction.followup.send(f"{WARNING_EMOJI} Log channel with ID {LOG_CHANNEL_ID} not found.", ephemeral=True)
+
+            except discord.Forbidden:
+                await interaction.followup.send(f"{WARNING_EMOJI} Failed to assign role to {interaction.user.mention}. Check my permissions. If you are seeing this, please report this to staff via `/tools report`.", ephemeral=True)
+        else:
+            remaining = required_tenure - tenure
+            hours_left = int(remaining.total_seconds() // 3600)
+            await interaction.followup.send(f"{X_EMOJI} You have only been in the server for {tenure.days} days.\nYou need **{hours_left} more hours** to qualify.", ephemeral=True)
+
 
     @tools.command(name="artist", description="Apply for Artist role.")
     async def uploadfile(self, interaction: discord.Interaction, file: discord.Attachment):
@@ -233,3 +347,110 @@ class ToolsCog(commands.Cog):
         # Respond to the reviewer
         action = "accepted and given the role" if accepted else "denied"
         await interaction.followup.send(f"{CHECK_EMOJI} {member.mention} has been {action} and notified via DM (If possible).", ephemeral=True)
+
+    @tools.command(name="strikes", description="Check how many strikes you, or another user, has.")
+    async def strikes(self, interaction: discord.Interaction, member: discord.Member = None):
+        await interaction.response.send_message("Checking strikes...", ephemeral=True)
+        author_roles = [role.id for role in interaction.user.roles]
+        
+        if member:
+            if AUTHORIZED_ROLE_ID not in author_roles:
+                await interaction.followup.send(f"{X_EMOJI} You don't have permission to check the strikes of other users.", ephemeral=True)
+                return
+            user_id = str(member.id)
+        else:
+            user_id = str(interaction.user.id)
+            member = interaction.user
+        
+        data = self.load_strikes()
+        guild_id = str(interaction.guild.id)
+
+        self.clean_expired_strikes(data)
+
+        strikes = data.get(guild_id, {}).get(user_id, [])
+        await interaction.followup.send(f"{member.mention} has {len(strikes)} active strike(s).", ephemeral=True)
+    
+    @tools.command(name="roles", description="For creating/updating the embed in #role-info.")
+    async def roles(self, interaction: discord.Interaction, edit : bool = True):
+        await interaction.response.send_message("Updating role embed...", ephemeral=True)
+        author_roles = [role.id for role in interaction.user.roles]
+
+        # Permission check
+        if 1381390158187856086 not in author_roles:
+            await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
+            return
+
+        embeds = []
+
+        file = discord.File(os.path.abspath('./img/Roles.png'), filename="Roles.png")
+
+        embed_exclusive = discord.Embed(color=16772213)
+        embed_exclusive.add_field(inline=False, name=f"{STAR_EMOJI} Exclusive Roles {STAR_EMOJI}", value="----------------------------\n")
+        embed_exclusive.add_field(inline=True, name="", value=f"{ACRYLIC_ROLE_EMOJI}{ACRYLIC_ROLE_MENTION}{ACRYLIC_ROLE_EMOJI}\nA role exclusive to the channel owner himself, Acrylic")
+        embed_exclusive.add_field(inline=True, name="", value=f"{SALAMI_ROLE_EMOJI}{SALAMI_ROLE_MENTION}{SALAMI_ROLE_EMOJI}\nA role exclusive to Salami, the artist for the videos")
+        embed_exclusive.add_field(inline=True, name="", value=f"{CREATORS_ROLE_EMOJI}{CREATORS_ROLE_MENTION}{CREATORS_ROLE_EMOJI}\nA role exclusive to the creators of the channel, its real purpose is just to group Acrylic and Salami together on the member list")
+        embeds.append(embed_exclusive)
+
+        embed_staff = discord.Embed(color=16772213)
+        embed_staff.add_field(inline=False, name=f"{STAFF_EMOJI} Staff Roles {STAFF_EMOJI}", value="----------------------------\n")
+        embed_staff.add_field(inline=True, name="", value=f"{ART_PANEL_ROLE_EMOJI}{ART_PANEL_ROLE_MENTION}{ART_PANEL_ROLE_EMOJI}\nBehind the scenes access to upcoming videos, providing feedback and suggested changes to make before the video is released publicly")
+        embed_staff.add_field(inline=True, name="", value=f"{MOD_ROLE_EMOJI}{MOD_ROLE_MENTION}{MOD_ROLE_EMOJI}\nAccess to <@1396161419434655855> commands. Moderates server to ensure a safe environment for everybody")
+        embeds.append(embed_staff)
+
+        embed_community = discord.Embed(color=16772213)
+        embed_community.add_field(inline=False, name=f"{COMMUNITY_EMOJI} Community Roles {COMMUNITY_EMOJI}", value="----------------------------\n")
+        embed_community.add_field(inline=True, name="", value=f"{SPECIAL_ROLE_EMOJI}{SPECIAL_ROLE_MENTION}{SPECIAL_ROLE_EMOJI}\nGranted to users under special circumstances, say winning an event")
+        embed_community.add_field(inline=True, name="", value=f"{MEMBER_TIER_2_ROLE_EMOJI}{MEMBER_TIER_2_ROLE_MENTION}{MEMBER_TIER_2_ROLE_EMOJI}\nAutomatically granted to those who are a Tier 2, YouTube channel member. See YouTube channel for perks")
+        embed_community.add_field(inline=True, name="", value=f"{MEMBER_TIER_1_ROLE_EMOJI}{MEMBER_TIER_1_ROLE_MENTION}{MEMBER_TIER_1_ROLE_EMOJI}\nAutomatically granted to those who are a Tier 1, YouTube channel member. See YouTube channel for perks")
+        embed_community.add_field(inline=True, name="", value=f"{MEMBER_ROLE_EMOJI}{MEMBER_ROLE_MENTION}{MEMBER_ROLE_EMOJI}\nAutomatically granted to anyone who is a YouTube channel member, regardless of tier. Comes with perms to change your nickname")
+        embed_community.add_field(inline=True, name="", value=f"{SUB_TIER_3_ROLE_EMOJI}{SUB_TIER_3_ROLE_MENTION}{SUB_TIER_3_ROLE_EMOJI}\nAutomatically granted to those who are a Tier 3, Twitch sub")
+        embed_community.add_field(inline=True, name="", value=f"{SUB_TIER_2_ROLE_EMOJI}{SUB_TIER_2_ROLE_MENTION}{SUB_TIER_2_ROLE_EMOJI}\nAutomatically granted to those who are a Tier 2, Twitch sub")
+        embed_community.add_field(inline=True, name="", value=f"{SUB_TIER_1_ROLE_EMOJI}{SUB_TIER_1_ROLE_MENTION}{SUB_TIER_1_ROLE_EMOJI}\nAutomatically granted to those who are a Tier 1, Twitch sub")
+        embed_community.add_field(inline=True, name="", value=f"{SUB_ROLE_EMOJI}{SUB_ROLE_MENTION}{SUB_ROLE_EMOJI}\nAutomatically granted to anyone who is a Twitch sub, regardless of tier. Comes with perms to change your nickname")
+        embed_community.add_field(inline=True, name="", value=f"{BOOSTER_ROLE_EMOJI}{BOOSTER_ROLE_MENTION}{BOOSTER_ROLE_EMOJI}\nAutomatically granted to those who boost the server. Comes with perms to change your nickname")
+        embed_community.add_field(inline=True, name="", value=f"{ARTIST_ROLE_EMOJI}{ARTIST_ROLE_MENTION}{ARTIST_ROLE_EMOJI}\nApply for this role using `/tools artist` and send your own art. Don't worry, your art isn't being judged on skill, the application process is just to prevent low effort, stolen, and or A.I. art")
+        embed_community.add_field(inline=True, name="", value=f"{GOOBER_2_ROLE_EMOJI}{GOOBER_2_ROLE_MENTION}{GOOBER_2_ROLE_EMOJI}\nRun `/tools goober2` at least 3 weeks after joining and you will be granted this role. Comes with perms to create polls, change your nickname, and start activities in voice chats")
+        embed_community.add_field(inline=True, name="", value=f"{GOOBER_ROLE_EMOJI}{GOOBER_ROLE_MENTION}{GOOBER_ROLE_EMOJI}\nRun `/tools goober` at least 3 days after joining and you will be granted this role. Comes with extended reaction perms, along with image and embed perms")
+        embeds.append(embed_community)
+
+        embed_notification = discord.Embed(color=16772213)
+        embed_notification.add_field(inline=False, name=f"{PUSHPIN_EMOJI} Notification Roles {PUSHPIN_EMOJI}", value="----------------------------\n")
+        embed_notification.add_field(inline=True, name="", value=f"{POLL_PINGS_ROLE_MENTION}\nSometimes we host polls for everybody to participate in, not just channel members")
+        embed_notification.add_field(inline=True, name="", value=f"{EVENT_PINGS_ROLE_MENTION}\nYou'll be pinged for events. What kind of events? idk maybe like a game sesh or something")
+        embed_notification.add_field(inline=True, name="", value=f"{MERCH_PINGS_ROLE_MENTION}\nYou'll be pinged whenever new merch is announced and or dropped")
+        embed_notification.add_field(inline=True, name="", value=f"{GIVEAWAY_PINGS_ROLE_MENTION}\nYou'll be pinged whenever a giveaway is hosted")
+        embed_notification.add_field(inline=True, name="", value=f"{STREAM_PINGS_ROLE_MENTION}\nGet notified when Acrylic goes live")
+        embed_notification.add_field(inline=True, name="", value=f"{SECOND_CHANNEL_PINGS_ROLE_MENTION}\nGet notified whenever a video is posted on the second channel")
+        embed_notification.add_field(inline=True, name="", value=f"{VOD_CHANNEL_PINGS_ROLE_MENTION}\nYou'll be notified whenever a video is uploaded to the VOD channel")
+        embed_notification.add_field(inline=False, name="", value="")
+        embed_notification.add_field(inline=False, name="To obtain these roles, go to the \"Channels & Roles\" tab", value="")
+        embeds.append(embed_notification)
+
+        if edit:
+            for id in ROLE_INFO_EMBED_MESSAGE_IDS:
+                target_message = None
+                for channel in interaction.guild.text_channels:
+                    try:
+                        msg = await channel.fetch_message(id)
+                        if msg:
+                            target_message = msg
+                            break
+                    except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                        continue
+
+                if not target_message:
+                    await interaction.followup.send(f"{WARNING_EMOJI} Message not found in any accessible text channel.", ephemeral=True)
+                    return
+                
+                await msg.edit(embed=embeds.pop(0))
+            await interaction.followup.send(f"{CHECK_EMOJI} Role embeds have been updated.", ephemeral=True)
+        else:
+            role_channel = self.bot.get_channel(ROLE_INFO_CHANNEL_ID)
+            if role_channel:
+                await role_channel.send(embed=embed_exclusive, file=file)
+                await role_channel.send(embed=embed_staff)
+                await role_channel.send(embed=embed_community)
+                await role_channel.send(embed=embed_notification)
+                await interaction.followup.send(f"{CHECK_EMOJI} Role embeds have been created.", ephemeral=True)
+            else:
+                await interaction.followup.send(f"{WARNING_EMOJI} Role channel with ID {ROLE_INFO_CHANNEL_ID} not found.", ephemeral=True)
