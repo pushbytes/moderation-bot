@@ -16,7 +16,7 @@ class SecretCog(commands.Cog):
         author_roles = [role.id for role in interaction.user.roles]
 
         # Permission check
-        if 1381390158187856086 not in author_roles:
+        if ACRYLIC_ROLE_ID not in author_roles:
             await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
@@ -36,7 +36,7 @@ class SecretCog(commands.Cog):
         author_roles = [role.id for role in interaction.user.roles]
 
         # Permission check
-        if 1381390158187856086 not in author_roles:
+        if ACRYLIC_ROLE_ID not in author_roles:
             await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
         

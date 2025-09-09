@@ -76,7 +76,7 @@ class ModerationCog(commands.Cog):
         author_roles = [role.id for role in interaction.user.roles]
 
         # Check if the user has the authorized role
-        if AUTHORIZED_ROLE_ID not in author_roles:
+        if MOD_ROLE_ID not in author_roles:
             await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
@@ -131,7 +131,7 @@ class ModerationCog(commands.Cog):
         author_roles = [role.id for role in interaction.user.roles]
 
         # Check if the user has the authorized role
-        if AUTHORIZED_ROLE_ID not in author_roles:
+        if MOD_ROLE_ID not in author_roles:
             await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
@@ -183,7 +183,7 @@ class ModerationCog(commands.Cog):
         author_roles = [role.id for role in interaction.user.roles]
 
         # Permission check
-        if AUTHORIZED_ROLE_ID not in author_roles:
+        if MOD_ROLE_ID not in author_roles:
             await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
@@ -245,7 +245,7 @@ class ModerationCog(commands.Cog):
         author_roles = [role.id for role in interaction.user.roles]
 
         # Permission check
-        if AUTHORIZED_ROLE_ID not in author_roles:
+        if MOD_ROLE_ID not in author_roles:
             await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
@@ -301,7 +301,7 @@ class ModerationCog(commands.Cog):
         author_roles = [role.id for role in interaction.user.roles]
 
         # Check permission role
-        if AUTHORIZED_ROLE_ID not in author_roles:
+        if MOD_ROLE_ID not in author_roles:
             await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
@@ -423,7 +423,7 @@ class ModerationCog(commands.Cog):
         author_roles = [role.id for role in interaction.user.roles]
 
         # Permission check
-        if AUTHORIZED_ROLE_ID not in author_roles:
+        if MOD_ROLE_ID not in author_roles:
             await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 

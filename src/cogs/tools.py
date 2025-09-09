@@ -283,7 +283,7 @@ class ToolsCog(commands.Cog):
         author_roles = [role.id for role in interaction.user.roles]
 
         # Check if the user has the authorized role
-        if AUTHORIZED_ROLE_ID not in author_roles:
+        if MOD_ROLE_ID not in author_roles:
             await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
         
@@ -354,7 +354,7 @@ class ToolsCog(commands.Cog):
         author_roles = [role.id for role in interaction.user.roles]
         
         if member:
-            if AUTHORIZED_ROLE_ID not in author_roles:
+            if MOD_ROLE_ID not in author_roles:
                 await interaction.followup.send(f"{X_EMOJI} You don't have permission to check the strikes of other users.", ephemeral=True)
                 return
             user_id = str(member.id)
@@ -376,7 +376,7 @@ class ToolsCog(commands.Cog):
         author_roles = [role.id for role in interaction.user.roles]
 
         # Permission check
-        if 1381390158187856086 not in author_roles:
+        if ACRYLIC_ROLE_ID not in author_roles:
             await interaction.followup.send(f"{X_EMOJI} You don't have permission to use this command.", ephemeral=True)
             return
 
@@ -428,30 +428,30 @@ class ToolsCog(commands.Cog):
         embeds.append(embed_notification)
 
         if edit:
-            for id in ROLE_INFO_EMBED_MESSAGE_IDS:
-                target_message = None
-                for channel in interaction.guild.text_channels:
-                    try:
-                        msg = await channel.fetch_message(id)
-                        if msg:
-                            target_message = msg
-                            break
-                    except (discord.NotFound, discord.Forbidden, discord.HTTPException):
-                        continue
+            target_message = None
+            for channel in interaction.guild.text_channels:
+                try:
+                    msg = await channel.fetch_message(ROLE_INFO_EMBED_MESSAGE_ID)
+                    if msg:
+                        target_message = msg
+                        break
+                except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                    continue
 
-                if not target_message:
-                    await interaction.followup.send(f"{WARNING_EMOJI} Message not found in any accessible text channel.", ephemeral=True)
-                    return
+            if not target_message:
+                await interaction.followup.send(f"{WARNING_EMOJI} Message not found in any accessible text channel.", ephemeral=True)
+                return
                 
-                await msg.edit(embed=embeds.pop(0))
+            await msg.edit(embeds=embeds)
             await interaction.followup.send(f"{CHECK_EMOJI} Role embeds have been updated.", ephemeral=True)
         else:
             role_channel = self.bot.get_channel(ROLE_INFO_CHANNEL_ID)
             if role_channel:
-                await role_channel.send(embed=embed_exclusive, file=file)
-                await role_channel.send(embed=embed_staff)
-                await role_channel.send(embed=embed_community)
-                await role_channel.send(embed=embed_notification)
+                await role_channel.send(embeds=embeds, file=file)
+                #await role_channel.send(embed=embed_exclusive, file=file)
+                #await role_channel.send(embed=embed_staff)
+                #await role_channel.send(embed=embed_community)
+                #await role_channel.send(embed=embed_notification)
                 await interaction.followup.send(f"{CHECK_EMOJI} Role embeds have been created.", ephemeral=True)
             else:
                 await interaction.followup.send(f"{WARNING_EMOJI} Role channel with ID {ROLE_INFO_CHANNEL_ID} not found.", ephemeral=True)
