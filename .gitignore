@@ -1,1 +1,5 @@
+# dotenv
 .env
+
+# py junk
+__pycache__
